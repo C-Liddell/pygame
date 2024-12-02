@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 
 pygame.init()
+
+
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
@@ -16,7 +18,6 @@ player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 @dataclass
 class spike:
     pos: int
-
 
 spikes = []
 
@@ -46,10 +47,23 @@ def spikeController(spikes, dt):
         if spike.pos.y > screen.get_height():
             spikes.remove(spike)
 
+
+def hitDetection(player_pos, spikes):
+    player_hitbox = pygame.Rect(player_pos.x - 28, player_pos.y - 28, 56, 56)
+    #pygame.draw.rect(screen, "yellow", player_hitbox)
+    for spike in spikes:
+        spike_hitbox = pygame.Rect(spike.pos.x - 28, spike.pos.y - 28, 56, 56)
+        #pygame.draw.rect(screen, "yellow", spike_hitbox)
+        if pygame.Rect.colliderect(player_hitbox, spike_hitbox):
+            screen.fill("pink")
+
+
 while running:
+
 
     dt = clock.tick(60) / 1000
     screen.fill("purple")
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -62,6 +76,8 @@ while running:
 
     playerController(player_pos, dt)
     spikeController(spikes, dt)
+
+    hitDetection(player_pos, spikes)
 
 
     pygame.display.flip()
