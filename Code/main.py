@@ -18,6 +18,7 @@ player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 @dataclass
 class spike:
     pos: int
+    # Add different sizes (calculate hitbox l and b with r*sqrt(2))
 
 spikes = []
 
@@ -70,7 +71,7 @@ while running:
             running = False
 
 
-    if random.randint(1,10) == 1:
+    if random.randint(1,8) == 1:
         spikes.append(spike(pygame.Vector2(random.randint(0, screen.get_width()), 0)))
 
 
