@@ -18,6 +18,8 @@ class spike:
     pos: int
     alive: bool
 
+spikes = []
+
 
 def movementController(player_pos, dt):
     keys = pygame.key.get_pressed()
@@ -42,8 +44,6 @@ def spikeController(spikes, dt):
         spike.pos.y += 200 * dt
         pygame.draw.circle(screen, "red", spike.pos, 40)
 
-spikes = [spike(pygame.Vector2(random.randint(0, screen.get_width()), 0), True) for i in range(10)]
-
 while running:
 
     dt = clock.tick(60) / 1000
@@ -52,6 +52,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    if random.randint(1,10) == 1:
+        spikes.append(spike(pygame.Vector2(random.randint(0, screen.get_width()), 0), True))
+
 
     playerController(player_pos, dt)
     spikeController(spikes, dt)
