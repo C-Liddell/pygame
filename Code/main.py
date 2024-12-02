@@ -16,7 +16,7 @@ player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 @dataclass
 class spike:
     pos: int
-    alive: bool
+
 
 spikes = []
 
@@ -43,6 +43,8 @@ def spikeController(spikes, dt):
     for spike in spikes:
         spike.pos.y += 200 * dt
         pygame.draw.circle(screen, "red", spike.pos, 40)
+        if spike.pos.y > screen.get_height():
+            spikes.remove(spike)
 
 while running:
 
@@ -53,14 +55,15 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+
     if random.randint(1,10) == 1:
-        spikes.append(spike(pygame.Vector2(random.randint(0, screen.get_width()), 0), True))
+        spikes.append(spike(pygame.Vector2(random.randint(0, screen.get_width()), 0)))
 
 
     playerController(player_pos, dt)
     spikeController(spikes, dt)
 
-    pygame.display.flip()
 
+    pygame.display.flip()
 
 pygame.quit()
