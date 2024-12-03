@@ -82,6 +82,7 @@ while running:
     player_pos = playerController(player_pos, dt)
     spikes = spikeController(spikes, dt)
 
+
     hitDetection(player_pos, spikes)
 
 
