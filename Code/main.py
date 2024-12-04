@@ -16,6 +16,7 @@ dt = 0
 
 
 player_pos = pygame.Vector2(width/ 2, height/ 2)
+lives = 3
 
 
 @dataclass
@@ -65,7 +66,7 @@ def spikeController(spikes, dt, height):
     return spikes
 
 
-def hitDetection(player_pos, spikes):
+def hitDetection(player_pos, spikes, lives):
     player_hitbox = pygame.Rect(player_pos.x - 28, player_pos.y - 28, 56, 56)
     #pygame.draw.rect(screen, "yellow", player_hitbox)
     for spike in spikes:
@@ -74,6 +75,16 @@ def hitDetection(player_pos, spikes):
         #pygame.draw.rect(screen, "yellow", spike_hitbox)
         if pygame.Rect.colliderect(player_hitbox, spike_hitbox):
             screen.fill("pink")
+            lives -= 1
+            print(lives)
+    return lives
+
+
+
+def spikeSpawner(spikes, width):
+    if random.randint(1,8) == 1:
+        spikes.append(spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80)))
+    return spikes
 
 
 while running:
@@ -87,16 +98,14 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-
-    if random.randint(1,8) == 1:
-        spikes.append(spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80)))
+    spikes = spikeSpawner(spikes, width)
 
 
     player_pos = playerController(player_pos, dt, width, height)
     spikes = spikeController(spikes, dt, height)
 
 
-    hitDetection(player_pos, spikes)
+    lives = hitDetection(player_pos, spikes, lives)
 
 
     pygame.display.flip()
