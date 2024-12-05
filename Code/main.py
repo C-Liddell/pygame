@@ -15,46 +15,48 @@ running = True
 dt = 0
 
 
-player_pos = pygame.Vector2(width/ 2, height/ 2)
-lives = 3
+@dataclass
+class player():
+    pos = pygame.Vector2(width/ 2, height/ 2)
+    radius = 40
+    next_hit_time = 0
+    lives = 3
 
 
 @dataclass
 class spike:
     pos: int
     radius: int
-    
-
 spikes = []
 
 
-def movementController(player_pos, dt, width, height):
+def movementController(player, dt, width, height):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
-        player_pos.y -= 300 * dt
+        player.pos.y -= 300 * dt
     if keys[pygame.K_s]:
-        player_pos.y += 300 * dt
+        player.pos.y += 300 * dt
     if keys[pygame.K_a]:
-        player_pos.x -= 300 * dt
+        player.pos.x -= 300 * dt
     if keys[pygame.K_d]:
-        player_pos.x += 300 * dt
+        player.pos.x += 300 * dt
 
-    while player_pos.x - 40 < 0:
-        player_pos.x += 1
-    while player_pos.x + 40 > width:
-        player_pos.x -= 1
-    while player_pos.y - 40 < 0:
-        player_pos.y += 1
-    while player_pos.y + 40 > height:
-        player_pos.y -= 1
+    while player.pos.x - 40 < 0:
+        player.pos.x += 1
+    while player.pos.x + 40 > width:
+        player.pos.x -= 1
+    while player.pos.y - 40 < 0:
+        player.pos.y += 1
+    while player.pos.y + 40 > height:
+        player.pos.y -= 1
 
-    return player_pos
+    return player
 
 
-def playerController(player_pos, dt, width, height):
-    player_pos = movementController(player_pos, dt, width, height)
-    pygame.draw.circle(screen, "blue", player_pos, 40)
-    return player_pos
+def playerController(player, dt, width, height):
+    player = movementController(player, dt, width, height)
+    pygame.draw.circle(screen, "blue", player.pos, 40)
+    return player
 
 
 def spikeController(spikes, dt, height):
@@ -66,18 +68,18 @@ def spikeController(spikes, dt, height):
     return spikes
 
 
-def hitDetection(player_pos, spikes, lives):
-    player_hitbox = pygame.Rect(player_pos.x - 28, player_pos.y - 28, 56, 56)
+def hitDetection(player, spikes):
+    player_hitbox = pygame.Rect(player.pos.x - 28, player.pos.y - 28, 56, 56)
     #pygame.draw.rect(screen, "yellow", player_hitbox)
     for spike in spikes:
         size = spike.radius*(math.sqrt(2))
         spike_hitbox = pygame.Rect(spike.pos.x - size/2, spike.pos.y - size/2, size, size)
         #pygame.draw.rect(screen, "yellow", spike_hitbox)
         if pygame.Rect.colliderect(player_hitbox, spike_hitbox):
-            screen.fill("pink")
-            lives -= 1
-            print(lives)
-    return lives
+            if pygame.time.get_ticks() > player.next_hit_time:
+                screen.fill("pink")
+                player.next_hit_time = pygame.time.get_ticks() + 1000
+    return player
 
 
 
@@ -88,8 +90,6 @@ def spikeSpawner(spikes, width):
 
 
 while running:
-
-
     dt = clock.tick(60) / 1000
     screen.fill("purple")
 
@@ -101,11 +101,11 @@ while running:
     spikes = spikeSpawner(spikes, width)
 
 
-    player_pos = playerController(player_pos, dt, width, height)
+    player = playerController(player, dt, width, height)
     spikes = spikeController(spikes, dt, height)
 
 
-    lives = hitDetection(player_pos, spikes, lives)
+    next_hit_time = hitDetection(player, spikes)
 
 
     pygame.display.flip()
