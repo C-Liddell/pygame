@@ -42,13 +42,13 @@ def movementController(player, dt, width, height):
     if keys[pygame.K_d]:
         player.pos.x += 300 * dt
 
-    while player.pos.x - 40 < 0:
+    while player.pos.x - player.radius < 0:
         player.pos.x += 1
-    while player.pos.x + 40 > width:
+    while player.pos.x + player.radius > width:
         player.pos.x -= 1
-    while player.pos.y - 40 < 0:
+    while player.pos.y - player.radius < 0:
         player.pos.y += 1
-    while player.pos.y + 40 > height:
+    while player.pos.y + player.radius > height:
         player.pos.y -= 1
 
     return player
