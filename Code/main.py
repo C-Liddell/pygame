@@ -14,7 +14,7 @@ clock = pygame.time.Clock()
 dt = 0
 
 
-font = pygame.freetype.Font("Xolonium-Regular.ttf", 24)
+font = pygame.freetype.Font("Xolonium-Regular.ttf", 40)
 
 
 @dataclass
@@ -22,8 +22,7 @@ class player():
     pos = pygame.Vector2(width/ 2, height/ 2)
     radius = 40
     next_hit_time = 0
-    lives = 10
-
+    lives = 3
 
 @dataclass
 class spike:
@@ -81,7 +80,6 @@ def hitDetection(player, spikes):
             if pygame.time.get_ticks() > player.next_hit_time:
                 screen.fill("pink")
                 player.lives -= 1
-                print(player.lives)
                 player.next_hit_time = pygame.time.get_ticks() + 1000
     return player
 
@@ -113,7 +111,7 @@ while player.lives > 0:
     spikes = spikeController(spikes, dt, height)
 
 
-    next_hit_time = hitDetection(player, spikes)
+    player = hitDetection(player, spikes)
 
     
     font.render_to(screen, (50, height - 50), str(player.lives))
