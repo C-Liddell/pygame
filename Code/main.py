@@ -114,7 +114,7 @@ while player.lives > 0:
     player = hitDetection(player, spikes)
 
     
-    font.render_to(screen, (50, height - 50), str(player.lives))
+    font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
     pygame.display.flip()
 
 
