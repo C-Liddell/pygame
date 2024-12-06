@@ -20,7 +20,7 @@ class player():
     pos = pygame.Vector2(width/ 2, height/ 2)
     radius = 40
     next_hit_time = 0
-    lives = 3
+    lives = 10
 
 
 @dataclass
@@ -78,6 +78,9 @@ def hitDetection(player, spikes):
         if pygame.Rect.colliderect(player_hitbox, spike_hitbox):
             if pygame.time.get_ticks() > player.next_hit_time:
                 screen.fill("pink")
+                player.lives -= 1
+                print(player.lives)
+                pygame.Font.render(player.lives, color = "yellow" )
                 player.next_hit_time = pygame.time.get_ticks() + 1000
     return player
 
@@ -89,9 +92,12 @@ def spikeSpawner(spikes, width):
     return spikes
 
 
-while running:
+while player.lives > 0:
     dt = clock.tick(60) / 1000
+
+
     screen.fill("purple")
+    pygame.font.Font.render(None, "Test", False, "yellow" )
 
 
     for event in pygame.event.get():
