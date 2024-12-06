@@ -11,8 +11,10 @@ width = screen.get_width()
 height = screen.get_height()
 
 clock = pygame.time.Clock()
-running = True
 dt = 0
+
+
+font = pygame.freetype.Font("Xolonium-Regular.ttf", 24)
 
 
 @dataclass
@@ -80,7 +82,6 @@ def hitDetection(player, spikes):
                 screen.fill("pink")
                 player.lives -= 1
                 print(player.lives)
-                pygame.Font.render(player.lives, color = "yellow" )
                 player.next_hit_time = pygame.time.get_ticks() + 1000
     return player
 
@@ -97,12 +98,13 @@ while player.lives > 0:
 
 
     screen.fill("purple")
-    pygame.font.Font.render(None, "Test", False, "yellow" )
+    text = font.render("test", size = 20)
 
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            exit()
+
 
     spikes = spikeSpawner(spikes, width)
 
@@ -113,7 +115,9 @@ while player.lives > 0:
 
     next_hit_time = hitDetection(player, spikes)
 
-
+    
+    font.render_to(screen, (50, height - 50), str(player.lives))
     pygame.display.flip()
+
 
 pygame.quit()
