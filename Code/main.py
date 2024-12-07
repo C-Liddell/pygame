@@ -3,6 +3,7 @@ import random
 from dataclasses import dataclass
 import math
 
+
 pygame.init()
 
 
@@ -12,7 +13,6 @@ height = screen.get_height()
 
 clock = pygame.time.Clock()
 dt = 0
-
 
 font = pygame.freetype.Font("Xolonium-Regular.ttf", 40)
 
@@ -30,6 +30,11 @@ class spike:
     radius: int
 spikes = []
 
+
+def playerController(player, dt, width, height):
+    player = movementController(player, dt, width, height)
+    pygame.draw.circle(screen, "blue", player.pos, 40)
+    return player
 
 def movementController(player, dt, width, height):
     keys = pygame.key.get_pressed()
@@ -54,11 +59,10 @@ def movementController(player, dt, width, height):
     return player
 
 
-def playerController(player, dt, width, height):
-    player = movementController(player, dt, width, height)
-    pygame.draw.circle(screen, "blue", player.pos, 40)
-    return player
-
+def spikeSpawner(spikes, width):
+    if random.randint(1,8) == 1:
+        spikes.append(spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80)))
+    return spikes
 
 def spikeController(spikes, dt, height):
     for spike in spikes:
@@ -85,36 +89,27 @@ def hitDetection(player, spikes):
 
 
 
-def spikeSpawner(spikes, width):
-    if random.randint(1,8) == 1:
-        spikes.append(spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80)))
-    return spikes
-
 
 while player.lives > 0:
-    dt = clock.tick(60) / 1000
-
-
-    screen.fill("purple")
-    text = font.render("test", size = 20)
-
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
 
 
+    dt = clock.tick(60) / 1000
+    screen.fill("purple")
+
+
     spikes = spikeSpawner(spikes, width)
-
-
-    player = playerController(player, dt, width, height)
     spikes = spikeController(spikes, dt, height)
 
-
+    player = playerController(player, dt, width, height)
     player = hitDetection(player, spikes)
 
     
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
+
+
     pygame.display.flip()
 
 
