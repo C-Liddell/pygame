@@ -15,6 +15,7 @@ clock = pygame.time.Clock()
 dt = 0
 frameCounter = 0
 iFrameCounter = 0
+cooldownCounter = 0
 
 score = 0
 
@@ -25,22 +26,25 @@ font = pygame.freetype.Font("Xolonium-Regular.ttf", 40)
 class player():
     pos = pygame.Vector2(width/ 2, height/ 2)
     radius = 40
-    next_hit_time = 0
     lives = 3
+    colour = "blue"
+    hitbox = 0
 
 @dataclass
 class spike:
     pos: int
     radius: int
+    hitbox: int
 spikes = []
+
+@dataclass
+class bullet:
+    pos: int
+    hitbox: int
+bullets = []
 
 
 def playerController(player, dt, width, height):
-    player = movementController(player, dt, width, height)
-    pygame.draw.circle(screen, "blue", player.pos, 40)
-    return player
-
-def movementController(player, dt, width, height):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w]:
         player.pos.y -= 300 * dt
@@ -60,38 +64,62 @@ def movementController(player, dt, width, height):
     while player.pos.y + player.radius > height:
         player.pos.y -= 1
 
+    player.hitbox = pygame.Rect(player.pos.x - 28, player.pos.y - 28, 56, 56)
+    pygame.draw.circle(screen, player.colour, player.pos, 40)
     return player
 
 
-def spikeSpawner(spikes, width):
+def spikeController(spikes, spike, dt, height, width, score):
     if random.randint(1,8) == 1:
-        spikes.append(spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80)))
-    return spikes
+        spikes.append(spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80), 0))
 
-def spikeController(spikes, dt, height):
     for spike in spikes:
+        size = spike.radius*(math.sqrt(2))
         spike.pos.y += 200 * dt
+        spike.hitbox = pygame.Rect(spike.pos.x - size/2, spike.pos.y - size/2, size, size)
         pygame.draw.circle(screen, "red", spike.pos, spike.radius)
         if spike.pos.y > height:
             spikes.remove(spike)
-    return spikes
+        if spike.radius < 20:
+            spikes.remove(spike)
+            score += 10
+    return spikes, score
 
 
 def hitDetection(player, spikes, iFrameCounter):
-    player_hitbox = pygame.Rect(player.pos.x - 28, player.pos.y - 28, 56, 56)
-    #pygame.draw.rect(screen, "yellow", player_hitbox)
+    iFrameCounter += 1
+    #spygame.draw.rect(screen, "yellow", player.hitbox)
     for spike in spikes:
-        size = spike.radius*(math.sqrt(2))
-        spike_hitbox = pygame.Rect(spike.pos.x - size/2, spike.pos.y - size/2, size, size)
-        #pygame.draw.rect(screen, "yellow", spike_hitbox)
-        if pygame.Rect.colliderect(player_hitbox, spike_hitbox):
-            if iFrameCounter >= 180:
+        #pygame.draw.rect(screen, "yellow", spike.hitbox)
+        if iFrameCounter >= 180:
+            player.colour = "blue"
+            if pygame.Rect.colliderect(player.hitbox, spike.hitbox):
                 screen.fill("pink")
+                player.colour = "pink"
                 player.lives -= 1
                 iFrameCounter = 0
     return player, iFrameCounter
 
 
+def bulletController(bullets, bullet, dt, cooldownCounter, player, spikes):
+    cooldownCounter += 1
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE] and cooldownCounter >= 15:
+        bullets.append(bullet(pygame.Vector2(player.pos.x - 10, player.pos.y - player.radius), 0))
+        cooldownCounter = 0
+    for bullet in bullets:
+        bullet.pos.y -= 200 * dt
+        bullet.hitbox = pygame.Rect(bullet.pos.x, bullet.pos.y, 20, 30)
+        pygame.draw.rect(screen, "yellow", bullet.hitbox)
+        for spike in spikes:
+            if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox):
+                spike.radius -= 10
+            if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox) or bullet.pos.y < 0:
+                try:
+                    bullets.remove(bullet)
+                except:
+                    pass
+    return bullets, cooldownCounter, spikes
 
 
 while player.lives > 0:
@@ -103,19 +131,18 @@ while player.lives > 0:
     dt = clock.tick(60) / 1000
     screen.fill("purple")
 
-    iFrameCounter += 1
-
     frameCounter += 1
     if frameCounter == 60:
         score += 1
         frameCounter = 0
 
 
-    spikes = spikeSpawner(spikes, width)
-    spikes = spikeController(spikes, dt, height)
+    spikes, score = spikeController(spikes, spike, dt, height, width, score)
 
     player = playerController(player, dt, width, height)
     player, iFrameCounter = hitDetection(player, spikes, iFrameCounter)
+
+    bullets, cooldownCounter, spikes = bulletController(bullets, bullet, dt, cooldownCounter, player, spikes)
 
     
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
