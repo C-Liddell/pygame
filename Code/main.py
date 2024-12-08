@@ -13,6 +13,10 @@ height = screen.get_height()
 
 clock = pygame.time.Clock()
 dt = 0
+frameCounter = 0
+iFrameCounter = 0
+
+score = 0
 
 font = pygame.freetype.Font("Xolonium-Regular.ttf", 40)
 
@@ -73,7 +77,7 @@ def spikeController(spikes, dt, height):
     return spikes
 
 
-def hitDetection(player, spikes):
+def hitDetection(player, spikes, iFrameCounter):
     player_hitbox = pygame.Rect(player.pos.x - 28, player.pos.y - 28, 56, 56)
     #pygame.draw.rect(screen, "yellow", player_hitbox)
     for spike in spikes:
@@ -81,11 +85,11 @@ def hitDetection(player, spikes):
         spike_hitbox = pygame.Rect(spike.pos.x - size/2, spike.pos.y - size/2, size, size)
         #pygame.draw.rect(screen, "yellow", spike_hitbox)
         if pygame.Rect.colliderect(player_hitbox, spike_hitbox):
-            if pygame.time.get_ticks() > player.next_hit_time:
+            if iFrameCounter >= 180:
                 screen.fill("pink")
                 player.lives -= 1
-                player.next_hit_time = pygame.time.get_ticks() + 1000
-    return player
+                iFrameCounter = 0
+    return player, iFrameCounter
 
 
 
@@ -99,15 +103,23 @@ while player.lives > 0:
     dt = clock.tick(60) / 1000
     screen.fill("purple")
 
+    iFrameCounter += 1
+
+    frameCounter += 1
+    if frameCounter == 60:
+        score += 1
+        frameCounter = 0
+
 
     spikes = spikeSpawner(spikes, width)
     spikes = spikeController(spikes, dt, height)
 
     player = playerController(player, dt, width, height)
-    player = hitDetection(player, spikes)
+    player, iFrameCounter = hitDetection(player, spikes, iFrameCounter)
 
     
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
+    font. render_to(screen, (20, 20), str(f"Score: {score}"))
 
 
     pygame.display.flip()
