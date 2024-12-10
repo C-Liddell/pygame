@@ -2,10 +2,12 @@ import pygame
 import random
 from dataclasses import dataclass
 import math
-from pygame import freetype
+import os
 
+os.chdir(os.path.dirname(__file__))
 
 pygame.init()
+
 
 
 screen = pygame.display.set_mode((1280, 720))
