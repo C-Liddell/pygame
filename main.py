@@ -2,6 +2,7 @@ import pygame
 import random
 from dataclasses import dataclass
 import math
+from pygame import freetype
 
 
 pygame.init()
@@ -88,7 +89,7 @@ def spikeController(spikes, spike, dt, height, width, score):
 
 def hitDetection(player, spikes, iFrameCounter):
     iFrameCounter += 1
-    #spygame.draw.rect(screen, "yellow", player.hitbox)
+    #pygame.draw.rect(screen, "yellow", player.hitbox)
     for spike in spikes:
         #pygame.draw.rect(screen, "yellow", spike.hitbox)
         if iFrameCounter >= 180:
