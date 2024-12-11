@@ -49,14 +49,16 @@ bullets = []
 
 def playerController(player, dt, width, height):
     keys = pygame.key.get_pressed()
+    speed = 300 * dt
+
     if keys[pygame.K_w]:
-        player.pos.y -= 300 * dt
+        player.pos.y -= speed
     if keys[pygame.K_s]:
-        player.pos.y += 300 * dt
+        player.pos.y += speed
     if keys[pygame.K_a]:
-        player.pos.x -= 300 * dt
+        player.pos.x -= speed
     if keys[pygame.K_d]:
-        player.pos.x += 300 * dt
+        player.pos.x += speed
 
     while player.pos.x - player.radius < 0:
         player.pos.x += 1
