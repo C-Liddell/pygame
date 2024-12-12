@@ -60,14 +60,8 @@ def playerController(player, dt, width, height):
     if keys[pygame.K_d]:
         player.pos.x += speed
 
-    while player.pos.x - player.radius < 0:
-        player.pos.x += 1
-    while player.pos.x + player.radius > width:
-        player.pos.x -= 1
-    while player.pos.y - player.radius < 0:
-        player.pos.y += 1
-    while player.pos.y + player.radius > height:
-        player.pos.y -= 1
+    player.pos.x = max(player.radius, min(width - player.radius, player.pos.x))
+    player.pos.y = max(player.radius, min(height - player.radius, player.pos.y))
 
     player.hitbox = pygame.Rect(player.pos.x - 28, player.pos.y - 28, 56, 56)
     pygame.draw.circle(screen, player.colour, player.pos, 40)
