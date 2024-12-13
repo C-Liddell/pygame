@@ -4,6 +4,9 @@ from dataclasses import dataclass
 import math
 import os
 
+# To prevent error when running build
+from pygame import freetype
+
 # Set working dir to path of currently running file
 os.chdir(os.path.dirname(__file__))
 
@@ -24,7 +27,7 @@ timers = {
 }
 
 # Import font file
-font = pygame.freetype.Font("_internal/files/Xolonium-Regular.ttf", 40)
+font = pygame.freetype.Font("files/Xolonium-Regular.ttf", 40)
 
 # Define classes
 @dataclass
