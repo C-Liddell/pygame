@@ -15,9 +15,6 @@ width = screen.get_width()
 height = screen.get_height()
 clock = pygame.time.Clock()
 dt = 0
-time_since_last_score = 0
-time_since_last_hit = 0
-time_since_last_shot = 0
 score = 0
 
 timers = {
@@ -43,6 +40,12 @@ class Spike:
     pos: pygame.Vector2
     radius: int
     hitbox: pygame.Rect
+
+    def getHitbox(self):
+        size = self.radius*(math.sqrt(2))
+        self.hitbox = pygame.Rect(self.pos.x - size/2, self.pos.y - size/2, size, size)
+        return self.hitbox
+
 
 @dataclass
 class Bullet:
@@ -85,8 +88,7 @@ def SpikeController(spikes, Spike, dt, height, width, score):
     for spike in spikes:
         spike.pos.y += 200 * dt
 
-        size = spike.radius*(math.sqrt(2))
-        spike.hitbox = pygame.Rect(spike.pos.x - size/2, spike.pos.y - size/2, size, size)
+        spike.getHitbox()
 
         pygame.draw.circle(screen, "red", spike.pos, spike.radius)
 
@@ -103,7 +105,7 @@ def hitDetection(player, spikes, timers):
     timers["hit"] += 1
     #pygame.draw.rect(screen, "yellow", player.hitbox)
     for spike in spikes:
-        #pygame.draw.rect(screen, "yellow", Spike.hitbox)
+        #pygame.draw.rect(screen, "yellow", spike.hitbox)
         if timers["hit"] >= 180:
             player.colour = "blue"
             if pygame.Rect.colliderect(player.hitbox, spike.hitbox):
@@ -143,7 +145,7 @@ while player.lives > 0:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and timers["shot"] > 15:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and timers["shot"] > 15:    
             bullets.append(Bullet(pygame.Vector2(player.pos.x - 10, player.pos.y - player.radius), 0))
             resetTimer(timers, "shot")
 
@@ -165,10 +167,10 @@ while player.lives > 0:
 
 
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
-    font. render_to(screen, (20, 20), str(f"Score: {score}"))
+    font.render_to(screen, (20, 20), str(f"Score: {score}"))
 
 
     pygame.display.flip()
 
-
+print(f"Game Over! You scored {score} points.")
 pygame.quit()
