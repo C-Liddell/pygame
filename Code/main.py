@@ -96,11 +96,11 @@ def SpikeController(spikes, Spike, dt, height, width, score):
 def hitDetection(player, spikes, iFrameCounter):
     iFrameCounter += 1
     #pygame.draw.rect(screen, "yellow", player.hitbox)
-    for Spike in spikes:
+    for spike in spikes:
         #pygame.draw.rect(screen, "yellow", Spike.hitbox)
         if iFrameCounter >= 180:
             player.colour = "blue"
-            if pygame.Rect.colliderect(player.hitbox, Spike.hitbox):
+            if pygame.Rect.colliderect(player.hitbox, spike.hitbox):
                 screen.fill("pink")
                 player.colour = "pink"
                 player.lives -= 1
@@ -108,25 +108,24 @@ def hitDetection(player, spikes, iFrameCounter):
     return player, iFrameCounter
 
 
-def BulletController(bullets, Bullet, dt, cooldownCounter, player, spikes):
+def BulletController(bullets, dt, cooldownCounter, spikes):
     cooldownCounter += 1
-    keys = pygame.key.get_pressed()
+    bullets_to_remove = []
 
-    if pygame.event.peek(pygame.KEYDOWN) and pygame.KEYDOWN.key == pygame.K_SPACE and cooldownCounter > 15:
-        bullets.append(Bullet(pygame.Vector2(player.pos.x - 10, player.pos.y - player.radius), 0))
-        cooldownCounter = 0
     for bullet in bullets:
         bullet.pos.y -= 200 * dt
         bullet.hitbox = pygame.Rect(bullet.pos.x, bullet.pos.y, 20, 30)
         pygame.draw.rect(screen, "yellow", bullet.hitbox)
+
         for spike in spikes:
             if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox):
                 spike.radius -= 10
             if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox) or bullet.pos.y < 0:
-                try:
-                    bullets.remove(bullet)
-                except:
-                    pass
+                bullets_to_remove.append(bullet)
+                spike.radius -= 10 if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox) else 0
+            
+    bullets = [bullet for bullet in bullets if bullet not in bullets_to_remove]
+
     return bullets, cooldownCounter, spikes
 
 
@@ -134,6 +133,9 @@ while player.lives > 0:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            bullets.append(Bullet(pygame.Vector2(player.pos.x - 10, player.pos.y - player.radius), 0))
+            cooldownCounter = 0
 
     dt = clock.tick(60) / 1000
     screen.fill("purple")
@@ -147,11 +149,11 @@ while player.lives > 0:
     spikes, score = SpikeController(spikes, Spike, dt, height, width, score)
 
     player = playerController(player, dt, width, height)
+    bullets, cooldownCounter, spikes = BulletController(bullets, dt, cooldownCounter, spikes)
+
     player, iFrameCounter = hitDetection(player, spikes, iFrameCounter)
 
-    bullets, cooldownCounter, spikes = BulletController(bullets, Bullet, dt, cooldownCounter, player, spikes)
 
-    
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
     font. render_to(screen, (20, 20), str(f"Score: {score}"))
 
