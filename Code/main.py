@@ -15,10 +15,16 @@ width = screen.get_width()
 height = screen.get_height()
 clock = pygame.time.Clock()
 dt = 0
-frameCounter = 0
-iFrameCounter = 0
-cooldownCounter = 0
+time_since_last_score = 0
+time_since_last_hit = 0
+time_since_last_shot = 0
 score = 0
+
+timers = {
+    "score": 0,
+    "hit": 0,
+    "shot": 0
+}
 
 # Import font file
 font = pygame.freetype.Font("Xolonium-Regular.ttf", 40)
@@ -93,23 +99,23 @@ def SpikeController(spikes, Spike, dt, height, width, score):
     return spikes, score
 
 
-def hitDetection(player, spikes, iFrameCounter):
-    iFrameCounter += 1
+def hitDetection(player, spikes, timers):
+    timers["hit"] += 1
     #pygame.draw.rect(screen, "yellow", player.hitbox)
     for spike in spikes:
         #pygame.draw.rect(screen, "yellow", Spike.hitbox)
-        if iFrameCounter >= 180:
+        if timers["hit"] >= 180:
             player.colour = "blue"
             if pygame.Rect.colliderect(player.hitbox, spike.hitbox):
                 screen.fill("pink")
                 player.colour = "pink"
                 player.lives -= 1
-                iFrameCounter = 0
-    return player, iFrameCounter
+                resetTimer(timers, "hit")
+    return player, timers
 
 
-def BulletController(bullets, dt, cooldownCounter, spikes):
-    cooldownCounter += 1
+def BulletController(bullets, dt, timers, spikes):
+    timers["shot"] += 1
     bullets_to_remove = []
 
     for bullet in bullets:
@@ -118,40 +124,44 @@ def BulletController(bullets, dt, cooldownCounter, spikes):
         pygame.draw.rect(screen, "yellow", bullet.hitbox)
 
         for spike in spikes:
-            if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox):
-                spike.radius -= 10
             if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox) or bullet.pos.y < 0:
                 bullets_to_remove.append(bullet)
                 spike.radius -= 10 if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox) else 0
             
     bullets = [bullet for bullet in bullets if bullet not in bullets_to_remove]
 
-    return bullets, cooldownCounter, spikes
+    return bullets, timers, spikes
+
+def resetTimer(timers, timer):
+    timers[timer] = 0
+    return timers
 
 
 while player.lives > 0:
+
+    # Event handler
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and timers["shot"] > 15:
             bullets.append(Bullet(pygame.Vector2(player.pos.x - 10, player.pos.y - player.radius), 0))
-            cooldownCounter = 0
+            resetTimer(timers, "shot")
 
     dt = clock.tick(60) / 1000
     screen.fill("purple")
 
-    frameCounter += 1
-    if frameCounter == 60:
+    # Increses score
+    timers["score"] += 1
+    if timers["score"] >= 60:
         score += 1
-        frameCounter = 0
+        resetTimer(timers, "score")
 
-
-    spikes, score = SpikeController(spikes, Spike, dt, height, width, score)
 
     player = playerController(player, dt, width, height)
-    bullets, cooldownCounter, spikes = BulletController(bullets, dt, cooldownCounter, spikes)
+    spikes, score = SpikeController(spikes, Spike, dt, height, width, score)
+    bullets, timers, spikes = BulletController(bullets, dt, timers, spikes)
 
-    player, iFrameCounter = hitDetection(player, spikes, iFrameCounter)
+    player, timers = hitDetection(player, spikes, timers)
 
 
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
