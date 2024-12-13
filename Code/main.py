@@ -24,7 +24,7 @@ timers = {
 }
 
 # Import font file
-font = pygame.freetype.Font("Xolonium-Regular.ttf", 40)
+font = pygame.freetype.Font("_internal/files/Xolonium-Regular.ttf", 40)
 
 # Define classes
 @dataclass
