@@ -19,6 +19,7 @@ height = screen.get_height()
 clock = pygame.time.Clock()
 dt = 0
 score = 0
+difficulty = 0
 
 timers = {
     "score": 0,
@@ -38,17 +39,21 @@ class Player():
     colour: str
     hitbox: pygame.Rect
 
-@dataclass
-class Spike:
-    pos: pygame.Vector2
-    radius: int
-    hitbox: pygame.Rect
-
     def getHitbox(self):
         size = self.radius*(math.sqrt(2))
         self.hitbox = pygame.Rect(self.pos.x - size/2, self.pos.y - size/2, size, size)
         return self.hitbox
 
+@dataclass
+class Spike:
+    pos: pygame.Vector2
+    radius: int
+    hitbox: pygame.Rect
+    
+    def getHitbox(self):
+        size = self.radius*(math.sqrt(2))
+        self.hitbox = pygame.Rect(self.pos.x - size/2, self.pos.y - size/2, size, size)
+        return self.hitbox
 
 @dataclass
 class Bullet:
@@ -61,7 +66,7 @@ spikes = []
 bullets = []
 
 
-def playerController(player, dt, width, height):
+def playerController(player, dt):
     keys = pygame.key.get_pressed()
     speed = 300 * dt
 
@@ -77,15 +82,12 @@ def playerController(player, dt, width, height):
     player.pos.x = max(player.radius, min(width - player.radius, player.pos.x))
     player.pos.y = max(player.radius, min(height - player.radius, player.pos.y))
 
-    player.hitbox = pygame.Rect(player.pos.x - 28, player.pos.y - 28, 56, 56)
+    player.getHitbox()
     pygame.draw.circle(screen, player.colour, player.pos, 40)
     return player
 
 
-def SpikeController(spikes, Spike, dt, height, width, score):
-    if random.randint(1,8) == 1:
-        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,80), None))
-
+def SpikeController(spikes, score, dt):
     spikes_to_remove = []
 
     for spike in spikes:
@@ -93,33 +95,25 @@ def SpikeController(spikes, Spike, dt, height, width, score):
 
         spike.getHitbox()
 
-        pygame.draw.circle(screen, "red", spike.pos, spike.radius)
+        pygame.draw.circle(screen, spike.colour, spike.pos, spike.radius)
 
         if spike.pos.y > height or spike.radius < 20:
             spikes_to_remove.append(spike)
             score += 10 if spike.radius < 20 else 0
 
     spikes = [spike for spike in spikes if spike not in spikes_to_remove]
-
     return spikes, score
 
 
-def hitDetection(player, spikes, timers):
-    timers["hit"] += 1
-    #pygame.draw.rect(screen, "yellow", player.hitbox)
-    for spike in spikes:
-        #pygame.draw.rect(screen, "yellow", spike.hitbox)
-        if timers["hit"] >= 180:
-            player.colour = "blue"
-            if pygame.Rect.colliderect(player.hitbox, spike.hitbox):
-                screen.fill("pink")
-                player.colour = "pink"
-                player.lives -= 1
-                resetTimer(timers, "hit")
-    return player, timers
+def spikeSpawner(spikes, difficulty):
+    if random.randint(1,8) == 1:
+        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,50), None, "red"))
+    elif random.randint(1, 20) == 1:
+        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(50,80), None, "green"))
+    return spikes
 
 
-def BulletController(bullets, dt, timers, spikes):
+def BulletController(bullets, spikes, dt, timers):
     timers["shot"] += 1
     bullets_to_remove = []
 
@@ -134,13 +128,31 @@ def BulletController(bullets, dt, timers, spikes):
                 spike.radius -= 10 if pygame.Rect.colliderect(bullet.hitbox, spike.hitbox) else 0
             
     bullets = [bullet for bullet in bullets if bullet not in bullets_to_remove]
+    return bullets, spikes, timers
 
-    return bullets, timers, spikes
+
+def hitDetection(player, spikes, timers):
+    timers["hit"] += 1
+    for spike in spikes:
+        if timers["hit"] >= 180:
+            player.colour = "blue"
+            if pygame.Rect.colliderect(player.hitbox, spike.hitbox):
+                screen.fill("pink")
+                player.colour = "pink"
+                player.lives -= 1
+                resetTimer(timers, "hit")
+    return player, timers
+
 
 def resetTimer(timers, timer):
     timers[timer] = 0
     return timers
 
+def debug(player, spikes, difficulty):
+    pygame.draw.rect(screen, "yellow", player.hitbox)
+    for spike in spikes:
+        pygame.draw.rect(screen, "yellow", spike.hitbox)
+    font.render_to(screen, (20, 75), str(f"Difficulty: {difficulty}"))
 
 while player.lives > 0:
 
@@ -159,14 +171,20 @@ while player.lives > 0:
     timers["score"] += 1
     if timers["score"] >= 60:
         score += 1
+        difficulty += 1
         resetTimer(timers, "score")
 
 
-    player = playerController(player, dt, width, height)
-    spikes, score = SpikeController(spikes, Spike, dt, height, width, score)
-    bullets, timers, spikes = BulletController(bullets, dt, timers, spikes)
+    player = playerController(player, dt)
 
+    spikes = spikeSpawner(spikes, difficulty)
+    spikes, score = SpikeController(spikes, score, dt)
+    
+    bullets, spikes, timers = BulletController(bullets, spikes, dt, timers)
     player, timers = hitDetection(player, spikes, timers)
+
+
+    debug(player, spikes, difficulty)
 
 
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
