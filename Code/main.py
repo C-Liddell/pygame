@@ -95,7 +95,7 @@ def SpikeController(spikes, score, dt):
 
         spike.getHitbox()
 
-        pygame.draw.circle(screen, spike.colour, spike.pos, spike.radius)
+        pygame.draw.circle(screen, "red", spike.pos, spike.radius)
 
         if spike.pos.y > height or spike.radius < 20:
             spikes_to_remove.append(spike)
@@ -107,9 +107,9 @@ def SpikeController(spikes, score, dt):
 
 def spikeSpawner(spikes, difficulty):
     if random.randint(1,8) == 1:
-        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,50), None, "red"))
+        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,50), None))
     elif random.randint(1, 20) == 1:
-        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(50,80), None, "green"))
+        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(50,80), None))
     return spikes
 
 
@@ -184,7 +184,7 @@ while player.lives > 0:
     player, timers = hitDetection(player, spikes, timers)
 
 
-    debug(player, spikes, difficulty)
+    #debug(player, spikes, difficulty)
 
 
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
