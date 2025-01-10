@@ -19,7 +19,7 @@ height = screen.get_height()
 clock = pygame.time.Clock()
 dt = 0
 score = 0
-difficulty = 0
+difficulty = 1
 
 timers = {
     "score": 0,
@@ -107,9 +107,7 @@ def SpikeController(spikes, score, dt):
 
 def spikeSpawner(spikes, difficulty):
     if random.randint(1,8) == 1:
-        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(20,50), None))
-    elif random.randint(1, 20) == 1:
-        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), random.randint(50,80), None))
+        spikes.append(Spike(pygame.Vector2(random.randint(0, width), 0), (random.randint(20,40))*difficulty, None))
     return spikes
 
 
@@ -171,7 +169,7 @@ while player.lives > 0:
     timers["score"] += 1
     if timers["score"] >= 60:
         score += 1
-        difficulty += 1
+        difficulty += 0.01
         resetTimer(timers, "score")
 
 
@@ -184,7 +182,7 @@ while player.lives > 0:
     player, timers = hitDetection(player, spikes, timers)
 
 
-    #debug(player, spikes, difficulty)
+    debug(player, spikes, difficulty)
 
 
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
