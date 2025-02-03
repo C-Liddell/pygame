@@ -41,7 +41,7 @@ class Player():
 
     def getHitbox(self):
         size = self.radius*(math.sqrt(2))
-        self.hitbox = pygame.Rect(self.pos.x - size/2, self.pos.y - size/2, size, size)
+        self.hitbox = pygame.draw.circle(screen, "yellow", self.pos, self.radius)
         return self.hitbox
 
 @dataclass
@@ -147,7 +147,7 @@ def resetTimer(timers, timer):
     return timers
 
 def debug(player, spikes, difficulty):
-    pygame.draw.rect(screen, "yellow", player.hitbox)
+    #pygame.draw.rect(screen, "yellow", player.hitbox)
     for spike in spikes:
         pygame.draw.rect(screen, "yellow", spike.hitbox)
     font.render_to(screen, (20, 75), str(f"Difficulty: {difficulty}"))
@@ -182,7 +182,7 @@ while player.lives > 0:
     player, timers = hitDetection(player, spikes, timers)
 
 
-    debug(player, spikes, difficulty)
+    #debug(player, spikes, difficulty)
 
 
     font.render_to(screen, (20, height - 50), str(f"Lives: {player.lives}"))
