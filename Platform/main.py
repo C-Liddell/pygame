@@ -11,13 +11,13 @@ running = True
 
 class character:
     def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
+        self.pos = pygame.Vector2(x, y)
+        self.velocity = pygame.Vector2(0, 0)
         self.width = width
         self.height = height
 
     def update(self):
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         pygame.draw.rect(screen, "blue", self.rect)
 
 player = character(0, 500, 50, 80)
@@ -31,39 +31,47 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                print("Hit")
 
 
-        controller(player, dt)
+        controller(dt)
         player.update()
 
         pygame.display.flip()
 
-        print(player.x, player.y)
 
-
-def controller(player, dt):
+def controller(dt):
     keys = pygame.key.get_pressed()
     speed = 300 * dt
 
 
     if keys[pygame.K_a]:
-        player.x -= speed
+        player.pos.x -= speed
     if keys[pygame.K_d]:
-        player.x += speed
+        player.pos.x += speed
     if keys[pygame.K_w]:
-        player.y -= speed
+        player.pos.y -= speed
     if keys[pygame.K_s]:
-        player.y += speed
+        player.pos.y += speed
 
-    if keys[pygame.K_SPACE] and player.y == 420:
-        player.y -= 100
+    if keydown() == True and player.pos.y == 420:
+        player.velocity.y = -6
 
-    player.y += 0.2
+    player.velocity.y += 0.1
+    player.pos.y += player.velocity.y
 
-    player.x = max(0, min(player.x, width - player.width))
-    player.y = max(0, min(player.y, height - player.height - (height - 500)))
+    player.pos.x = max(0, min(player.pos.x, width - player.width))
+    player.pos.y = max(0, min(player.pos.y, height - player.height - (height - 500)))
 
-    return player
+def keydown():
+    for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                print("Hit")
+                return True
+            else:
+                return False
+
 
 
 main()
