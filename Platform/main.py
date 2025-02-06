@@ -8,35 +8,59 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 running = True
 
-
 class character:
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, colour):
         self.pos = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2(0, 0)
         self.width = width
         self.height = height
+        self.colour = "blue"
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
+        self.grounded = False
 
     def update(self):
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
-        pygame.draw.rect(screen, "blue", self.rect)
+        pygame.draw.rect(screen, self.colour, self.rect)
 
-player = character(0, 500, 50, 80)
+
+class platform:
+    def __init__(self, x, y, width, height, colour):
+        self.pos = pygame.Vector2(x, y)
+        self.width = width
+        self.height = height
+        self.colour = colour
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
+
+    def update(self):
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
+        pygame.draw.rect(screen, self.colour, self.rect)
+
+player = character(0, 200, 50, 80, "blue")
+
+platforms = [platform(0, 420, width, 300, "black"), platform(900, 250, 70, 20, "black")]
 
 
 def main():
     while running:
+
+
         dt = clock.tick()/1000
         screen.fill("purple")
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                print("Hit")
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and player.grounded == True:
+                player.velocity.y = -6
 
 
         controller(dt)
         player.update()
+
+        for p in platforms:
+            p.update()
+
 
         pygame.display.flip()
 
@@ -55,22 +79,24 @@ def controller(dt):
     if keys[pygame.K_s]:
         player.pos.y += speed
 
-    if keydown() == True and player.pos.y == 420:
-        player.velocity.y = -6
-
-    player.velocity.y += 0.1
+    player.velocity.y += 0.05
     player.pos.y += player.velocity.y
 
-    player.pos.x = max(0, min(player.pos.x, width - player.width))
-    player.pos.y = max(0, min(player.pos.y, height - player.height - (height - 500)))
 
-def keydown():
-    for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                print("Hit")
-                return True
-            else:
-                return False
+
+    for p in platforms:
+        #player.rect.clamp_ip(p.rect)
+        #if player.pos.y + player.height > p.pos.y:
+            #player.pos.y = max(0, p.pos.y - player.height)
+            #player.grounded = True
+            #print("Hit")
+        #else:
+            #player.pos.y = max(0, min(player.pos.y, height - player.height))
+            #player.grounded = False
+            #print("Miss")
+
+
+    player.pos.x = max(0, min(player.pos.x, width - player.width))
 
 
 
