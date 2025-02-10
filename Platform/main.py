@@ -8,13 +8,14 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 running = True
 
+
 class character:
     def __init__(self, x, y, width, height, colour):
         self.pos = pygame.Vector2(x, y)
         self.velocity = pygame.Vector2(0, 0)
         self.width = width
         self.height = height
-        self.colour = "blue"
+        self.colour = colour
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         self.grounded = False
 
@@ -35,14 +36,13 @@ class platform:
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         pygame.draw.rect(screen, self.colour, self.rect)
 
-player = character(0, 200, 50, 80, "blue")
+player = character(0, 0, 50, 80, "blue")
 
-platforms = [platform(0, 420, width, 300, "black"), platform(900, 250, 70, 20, "black")]
+platforms = platform(0, 420, width, 300, "black")
 
 
 def main():
     while running:
-
 
         dt = clock.tick()/1000
         screen.fill("purple")
@@ -58,8 +58,7 @@ def main():
         controller(dt)
         player.update()
 
-        for p in platforms:
-            p.update()
+        platforms.update()
 
 
         pygame.display.flip()
@@ -79,25 +78,20 @@ def controller(dt):
     if keys[pygame.K_s]:
         player.pos.y += speed
 
-    player.velocity.y += 0.05
+    if player.grounded == False:
+        player.velocity.y += 0.05
     player.pos.y += player.velocity.y
 
 
-
-    for p in platforms:
-        #player.rect.clamp_ip(p.rect)
-        #if player.pos.y + player.height > p.pos.y:
-            #player.pos.y = max(0, p.pos.y - player.height)
-            #player.grounded = True
-            #print("Hit")
-        #else:
-            #player.pos.y = max(0, min(player.pos.y, height - player.height))
-            #player.grounded = False
-            #print("Miss")
+    if platforms.rect.colliderect(player.rect):
+        player.pos.y = platforms.rect.top - player.height
+        player.grounded = True
+        print("Hit")
+    else:
+        player.grounded = False
 
 
     player.pos.x = max(0, min(player.pos.x, width - player.width))
-
 
 
 main()
