@@ -9,89 +9,79 @@ clock = pygame.time.Clock()
 running = True
 
 
+
 class character:
-    def __init__(self, x, y, width, height, colour):
+    def __init__(self, x, y, width, height, colour, grounded):
         self.pos = pygame.Vector2(x, y)
-        self.velocity = pygame.Vector2(0, 0)
+        self.vel = pygame.Vector2(0, 0)
+        self.acc = pygame.Vector2(0, 0)
+
         self.width = width
         self.height = height
-        self.colour = colour
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
-        self.grounded = False
+        
+        self.colour = colour
+
+        self.jump = 0
+        self.grounded = grounded
 
     def update(self):
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         pygame.draw.rect(screen, self.colour, self.rect)
 
 
-class platform:
-    def __init__(self, x, y, width, height, colour):
-        self.pos = pygame.Vector2(x, y)
-        self.width = width
-        self.height = height
-        self.colour = colour
-        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
+player = character(0, 0, 50, 80, "blue", False)
 
-    def update(self):
-        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
-        pygame.draw.rect(screen, self.colour, self.rect)
-
-player = character(0, 0, 50, 80, "blue")
-
-platforms = platform(0, 420, width, 300, "black")
 
 
 def main():
     while running:
 
-        dt = clock.tick()/1000
+        dt = clock.tick(30)
         screen.fill("purple")
 
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and player.grounded == True:
-                player.velocity.y = -6
 
 
-        controller(dt)
+        controller()
+
         player.update()
-
-        platforms.update()
-
 
         pygame.display.flip()
 
 
-def controller(dt):
+def controller():
     keys = pygame.key.get_pressed()
-    speed = 300 * dt
+    speed = 10
 
+    gravity = 6
 
     if keys[pygame.K_a]:
         player.pos.x -= speed
     if keys[pygame.K_d]:
         player.pos.x += speed
-    if keys[pygame.K_w]:
-        player.pos.y -= speed
-    if keys[pygame.K_s]:
-        player.pos.y += speed
 
-    if player.grounded == False:
-        player.velocity.y += 0.05
-    player.pos.y += player.velocity.y
+    if keys[pygame.K_SPACE] and player.grounded:
+        player.jump += 15
 
-
-    if platforms.rect.colliderect(player.rect):
-        player.pos.y = platforms.rect.top - player.height
+    if player.pos.y == height - player.height:
         player.grounded = True
-        print("Hit")
     else:
+        player.pos.y += gravity
         player.grounded = False
 
 
-    player.pos.x = max(0, min(player.pos.x, width - player.width))
+    player.pos.y -= player.jump
+
+    player.jump -= 3
+    player.jump = max(0, player.jump)
+
+
+    player.pos.x = max(min(player.pos.x, width - player.width), 0)
+    player.pos.y = max(min(player.pos.y, height - player.height), 0)
 
 
 main()
