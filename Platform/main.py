@@ -42,7 +42,6 @@ print(platform)
 
 def main():
     while running:
-        print(player.grounded)
 
         dt = clock.tick(30)
         screen.fill("purple")
@@ -57,7 +56,6 @@ def main():
         player.update()
 
         collision()
-
         for p in platform:
             p.update()
 
@@ -80,7 +78,6 @@ def controller():
     
     player.pos.y += gravity
 
-
     player.pos.y -= player.jump
 
     player.jump -= 3
@@ -92,6 +89,7 @@ def controller():
 def collision():
     plat_rect = []
     for i in platform:
+        print(player.rect.bottom, i.rect.top)
         plat_rect.append(i.rect)
 
     plat_index = player.rect.collidelist(plat_rect)
@@ -102,7 +100,7 @@ def collision():
     else:
         player.maxY = height
         player.grounded = False
-    player.pos.y = max(min(player.pos.y, player.maxY - player.height), 0)
+    player.pos.y = max(min(player.pos.y, player.maxY - player.rect.height), 0)
 
 
 main()
