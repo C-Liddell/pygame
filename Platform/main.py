@@ -16,7 +16,6 @@ class character:
     def __init__(self, x, y, width, height, colour):
         self.pos = pygame.Vector2(x, y)
         self.vel = pygame.Vector2(0, 0)
-        self.acc = pygame.Vector2(0, 0)
 
         self.width = width
         self.height = height
@@ -43,7 +42,7 @@ print(platform)
 def main():
     while running:
 
-        dt = clock.tick(30)
+        dt = clock.tick(60)
         screen.fill("purple")
 
 
@@ -53,9 +52,9 @@ def main():
 
 
         controller()
-        player.update()
 
         collision()
+        player.update()
         for p in platform:
             p.update()
 
@@ -64,38 +63,44 @@ def main():
 
 def controller():
     keys = pygame.key.get_pressed()
-    speed = 10
-    gravity = 10
+
+    speed = 3
+    maxSpeed = 7
+    friction = 2
+
+    gravity = 2.5
 
     if keys[pygame.K_a]:
-        player.pos.x -= speed
+        player.vel.x -= speed
     if keys[pygame.K_d]:
-        player.pos.x += speed
+        player.vel.x += speed
 
     if keys[pygame.K_SPACE] and player.grounded:
-        player.jump = 30
+        player.vel.y = -30
 
-    
-    player.pos.y += gravity
+    player.pos.y += player.vel.y
+    player.vel.y += gravity
 
-    player.pos.y -= player.jump
+    player.pos.x += player.vel.x
+    if player.vel.x < 0:
+        player.vel.x += friction
+    elif player.vel.x > 0:
+        player.vel.x -= friction
 
-    player.jump -= 3
-    player.jump = max(0, player.jump)
-
+    player.vel.x = max(min(player.vel.x, maxSpeed), -maxSpeed)
 
     player.pos.x = max(min(player.pos.x, width - player.width), 0)
 
 def collision():
     plat_rect = []
     for i in platform:
-        print(player.rect.bottom, i.rect.top)
         plat_rect.append(i.rect)
 
     plat_index = player.rect.collidelist(plat_rect)
 
     if plat_index != -1:
         player.maxY = platform[plat_index].rect.top
+        player.vel.y = 0
         player.grounded = True
     else:
         player.maxY = height
