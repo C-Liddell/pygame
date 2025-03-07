@@ -8,78 +8,93 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 running = True
 
-maxY = height
 
 
+class Character:
+    pos = pygame.Vector2(0, 0)
+    maxY = 720
+    grounded = False
 
-class character:
-    def __init__(self, x, y, width, height, colour):
-        self.pos = pygame.Vector2(x, y)
-        self.vel = pygame.Vector2(0, 0)
+    vel = pygame.Vector2(0, 0)
 
-        self.width = width
-        self.height = height
-        self.maxY = 720
-        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
-        
-        self.colour = colour
+    width = 50
+    height = 80
 
-        self.jump = 0
-        self.grounded = False
+    rect = pygame.Rect
+
+    colour = "blue"
 
     def update(self):
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         pygame.draw.rect(screen, self.colour, self.rect)
 
+player = Character()
 
-player = character(0, 0, 50, 80, "blue")
-platform = [character(0, 700, width/2, 20, "black"), character(width/2 + 75, 650, width/2, 20, "black")]
 
-print(platform)
+class Platform:
+    colour = "black"
+    def __init__(self, x, y, width, height):
+        self.pos = pygame.Vector2(x,y)
+        self.width = width
+        self.height = height
+
+        self.rect = pygame.Rect
+
+    def update(self):
+        self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
+        pygame.draw.rect(screen, self.colour, self.rect)
+
+platform = [Platform(0, 700, width/2, 20), Platform(width/2 + 75, 650, width/2, 20)]
 
 
 
 def main():
     while running:
-
         dt = clock.tick(60)
         screen.fill("purple")
+        jump = False
 
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-
-        controller()
-
-        collision()
         player.update()
         for p in platform:
             p.update()
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                jump = True
+            
+
+        controller(jump)
+
+        #print(player.grounded)
+
         pygame.display.flip()
 
 
-def controller():
+
+def controller(jump):
     keys = pygame.key.get_pressed()
 
-    speed = 3
+    acceleration = 2
     maxSpeed = 7
-    friction = 2
+    friction = 1
 
     gravity = 2.5
 
-    if keys[pygame.K_a]:
-        player.vel.x -= speed
-    if keys[pygame.K_d]:
-        player.vel.x += speed
-
-    if keys[pygame.K_SPACE] and player.grounded:
+    if jump and player.grounded:
         player.vel.y = -30
 
     player.pos.y += player.vel.y
     player.vel.y += gravity
+
+    collision()
+
+
+    if keys[pygame.K_a]:
+        player.vel.x -= acceleration
+    if keys[pygame.K_d]:
+        player.vel.x += acceleration
 
     player.pos.x += player.vel.x
     if player.vel.x < 0:
@@ -88,24 +103,23 @@ def controller():
         player.vel.x -= friction
 
     player.vel.x = max(min(player.vel.x, maxSpeed), -maxSpeed)
-
     player.pos.x = max(min(player.pos.x, width - player.width), 0)
 
+
+
 def collision():
-    plat_rect = []
-    for i in platform:
-        plat_rect.append(i.rect)
-
+    plat_rect = [p.rect for p in platform]
     plat_index = player.rect.collidelist(plat_rect)
-
+    print(plat_index)
     if plat_index != -1:
         player.maxY = platform[plat_index].rect.top
         player.vel.y = 0
         player.grounded = True
-    else:
+    elif plat_index == -1:
         player.maxY = height
         player.grounded = False
     player.pos.y = max(min(player.pos.y, player.maxY - player.rect.height), 0)
+
 
 
 main()
