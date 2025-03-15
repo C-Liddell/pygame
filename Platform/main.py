@@ -82,7 +82,7 @@ def controller(jump):
 
     gravity = 2.5
 
-    if jump and player.grounded:
+    if keys[pygame.K_SPACE] and player.grounded:
         player.vel.y = -30
 
     player.pos.y += player.vel.y
