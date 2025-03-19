@@ -1,4 +1,5 @@
 import pygame
+import csv
 
 
 pygame.init()
@@ -44,8 +45,10 @@ class Platform:
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         pygame.draw.rect(screen, self.colour, self.rect)
 
-platform = [Platform(0, 700, width/2, 20), Platform(width/2 + 75, 650, width/2, 20)]
-
+def loadLevel():
+    with open("Platform/level1.txt", "r") as file:
+        data = csv.reader(file)
+        
 
 
 def main():
@@ -76,34 +79,31 @@ def main():
 def controller(jump):
     keys = pygame.key.get_pressed()
 
-    acceleration = 2
-    maxSpeed = 7
+    acceleration = 3
+    maxSpeed = 9
     friction = 1
-
     gravity = 2.5
 
     if keys[pygame.K_SPACE] and player.grounded:
         player.vel.y = -30
-
-    player.pos.y += player.vel.y
-    player.vel.y += gravity
-
-    collision()
-
-
     if keys[pygame.K_a]:
         player.vel.x -= acceleration
     if keys[pygame.K_d]:
         player.vel.x += acceleration
 
-    player.pos.x += player.vel.x
     if player.vel.x < 0:
         player.vel.x += friction
     elif player.vel.x > 0:
         player.vel.x -= friction
 
     player.vel.x = max(min(player.vel.x, maxSpeed), -maxSpeed)
+    player.pos.x += player.vel.x
+
+    player.vel.y += gravity
+    player.pos.y += player.vel.y
+
     player.pos.x = max(min(player.pos.x, width - player.width), 0)
+    collision()
 
 
 
@@ -121,5 +121,5 @@ def collision():
     player.pos.y = max(min(player.pos.y, player.maxY - player.rect.height), 0)
 
 
-
+platform = loadLevel()
 main()
