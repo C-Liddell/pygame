@@ -13,6 +13,7 @@ running = True
 
 class Character:
     def __init__(self, x, y):
+        self.start_pos = pygame.Vector2(x, y)
         self.pos = pygame.Vector2(x, y)
         self.maxY = 720
         self.minY = 0
@@ -30,6 +31,12 @@ class Character:
     def update(self):
         self.rect = pygame.Rect(self.pos.x, self.pos.y, self.width, self.height)
         pygame.draw.rect(screen, self.colour, self.rect)
+
+    def reset(self):
+        self.pos.x = self.start_pos.x
+        self.pos.y = self.start_pos.y
+        print(self.pos)
+
 
 
 class Platform:
@@ -60,27 +67,32 @@ def loadLevel(lvlNo):
         
 
 
-def main(platform, player, finish):
+def main():
     levelCounter = 1
+    platform, player, finish = loadLevel(levelCounter)
     while running:
         clock.tick(60)
+        screen.fill("purple")
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
             
         player = controller(player, platform)
-
-        screen.fill("purple")
-
         player.update()
+
         for p in platform:
             p.update()
+
         finish.update()
 
         if player.rect.colliderect(finish.rect):
             levelCounter += 1
-            platform, player, finish = loadLevel(levelCounter)
+            try:
+                platform, player, finish = loadLevel(levelCounter)
+            except:
+                print("You win")
+                pygame.quit()
 
         pygame.display.flip()
 
@@ -113,29 +125,38 @@ def controller(player, platform):
     player.pos.y += player.vel.y
 
     player.pos.x = max(min(player.pos.x, width - player.width), 0)
-    player = collision(platform)
+    player = collision(player, platform)
     return player
 
 
 
-def collision(platform):
+def collision(player, platform):
     plat_rect = [p.rect for p in platform]
     plat_index = player.rect.collidelist(plat_rect)
+
     if plat_index != -1:
         if player.rect.center[1] <= plat_rect[plat_index].top:
             player.maxY = platform[plat_index].rect.top
             player.grounded = True
-        if player.rect.center[1] > plat_rect[plat_index].bottom:
+
+        elif player.rect.center[1] > plat_rect[plat_index].bottom:
             player.minY = platform[plat_index].rect.bottom
         player.vel.y = 0
+
+        if platform[plat_index].colour == "red":
+            player.reset()
+
     elif plat_index == -1:
         player.maxY = height
         player.minY = 0
         player.grounded = False
+
+        if player.rect.bottom >= height:
+            player.reset()
+
     player.pos.y = max(min(player.pos.y, player.maxY - player.rect.height), player.minY)
     return player
 
 
 
-platform, player, finish = loadLevel(1)
-main(platform, player, finish)
+main()
